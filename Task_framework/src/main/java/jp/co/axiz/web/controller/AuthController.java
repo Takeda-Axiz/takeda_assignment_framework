@@ -32,7 +32,6 @@ public class AuthController {
 
 	@RequestMapping(value="/logout", method=RequestMethod.POST)
 	public String logout(@ModelAttribute("LoginForm") LoginForm form, Model model) {
-
 		return "logout";
 	}
 }

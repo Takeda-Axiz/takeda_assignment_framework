@@ -15,11 +15,6 @@ public class IndexController {
 
 	@RequestMapping(value="/menu", method=RequestMethod.GET)
 	public String menu(Model model) {
-
-		if(model != null) {
-			return "menu";
-		}else {
-			return "redirect:index";
-		}
+		return "menu";
 	}
 }
