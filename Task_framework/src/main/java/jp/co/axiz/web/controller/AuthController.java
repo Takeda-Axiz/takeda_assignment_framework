@@ -1,5 +1,7 @@
 package jp.co.axiz.web.controller;
 
+import javax.servlet.http.HttpSession;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -12,6 +14,9 @@ import jp.co.axiz.web.service.LoginService;
 
 @Controller
 public class AuthController {
+
+	@Autowired
+	HttpSession session;
 
 	@Autowired
 	private LoginService service;
@@ -32,6 +37,8 @@ public class AuthController {
 
 	@RequestMapping(value="/logout", method=RequestMethod.POST)
 	public String logout(@ModelAttribute("LoginForm") LoginForm form, Model model) {
+		session.invalidate();
+
 		return "logout";
 	}
 }

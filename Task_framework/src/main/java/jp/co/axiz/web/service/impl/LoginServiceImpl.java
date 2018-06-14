@@ -1,5 +1,7 @@
 package jp.co.axiz.web.service.impl;
 
+import javax.servlet.http.HttpSession;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
@@ -14,6 +16,9 @@ public class LoginServiceImpl implements LoginService {
 
 	@Autowired
 	private AdminDao admindao;
+
+	@Autowired
+	HttpSession session;
 
 	@Override
 	public String CallDao(LoginForm form, Model model) {
@@ -36,7 +41,7 @@ public class LoginServiceImpl implements LoginService {
 		}else {
 			// nullではない(adminIDが存在している)場合
 			// adminユーザーを記憶
-			model.addAttribute("user", getAdmin);
+			session.setAttribute("user", getAdmin);
 			// menu.jspに遷移
 			retStr = "menu";
 		}

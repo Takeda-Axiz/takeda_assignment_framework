@@ -7,5 +7,4 @@ import jp.co.axiz.web.entity.LoginForm;
 public interface LoginService {
 
 	String CallDao(LoginForm form, Model model);
-
 }
