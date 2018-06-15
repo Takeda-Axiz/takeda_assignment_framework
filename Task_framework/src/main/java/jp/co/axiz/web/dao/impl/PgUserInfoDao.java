@@ -1,30 +1,31 @@
 package jp.co.axiz.web.dao.impl;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import jp.co.axiz.web.dao.UserInfoDao;
 import jp.co.axiz.web.entity.UserInfo;
-import jp.co.axiz.web.exception.DataAccessException;
-import jp.co.axiz.web.util.DbUtil;
 
 @Repository
 public class PgUserInfoDao implements UserInfoDao {
 
+	@Autowired
+	NamedParameterJdbcTemplate jdbcTemp;
+
 	private String SQLComm;
+	private RowMapper<UserInfo> mapper = new BeanPropertyRowMapper<UserInfo>(UserInfo.class);
+	private MapSqlParameterSource SQLParam = new MapSqlParameterSource();
 
 	@Override
 	public List<UserInfo> findAll() {
 		// 変数宣言
-		ArrayList<UserInfo> list = new ArrayList<>();
-
 		// 初期化
 		SQLComm = "";
 
@@ -39,28 +40,17 @@ public class PgUserInfoDao implements UserInfoDao {
 				+ " ORDER BY"
 				+ " user_id";
 
-		try (Connection con = DbUtil.getConnection();
-				PreparedStatement stmt = con.prepareStatement(SQLComm)) {
-			ResultSet rs = stmt.executeQuery();
-
-			while (rs.next()) {
-				UserInfo u = new UserInfo();
-				u.setId(rs.getInt("user_id"));
-				u.setName(rs.getString("user_name"));
-				u.setTelephone(rs.getString("telephone"));
-				u.setPassword(rs.getString("password"));
-				list.add(u);
-			}
-		} catch (SQLException e) {
-			throw new DataAccessException(e);
-		}
-
-		return list;
+		return jdbcTemp.query(SQLComm, mapper);
 	}
 
 	@Override
 	public List<UserInfo> find(UserInfo cond) {
 		// 変数宣言
+		Boolean hasUserId;
+		Boolean hasUserName;
+		Boolean hasTelephone;
+		int refAry;
+
 		ArrayList<String> whereCond = new ArrayList<>();
 		ArrayList<Object> param = new ArrayList<>();
 
@@ -77,16 +67,21 @@ public class PgUserInfoDao implements UserInfoDao {
 				+ " user_info"
 				+ " WHERE ";
 
-		if (cond.getId() != null) {
-			whereCond.add("user_id = ?");
-			param.add(cond.getId());
+		hasUserId = cond.getUserId() != null;
+		if (hasUserId) {
+			whereCond.add("user_id = :user_id");
+			param.add(cond.getUserId());
 		}
-		if (cond.getName() != null && !cond.getName().isEmpty()) {
-			whereCond.add("user_name = ?");
-			param.add(cond.getName());
+
+		hasUserName = (cond.getUserName() != null && !cond.getUserName().isEmpty());
+		if (hasUserName) {
+			whereCond.add("user_name = :user_name");
+			param.add(cond.getUserName());
 		}
-		if (cond.getTelephone() != null && !cond.getTelephone().isEmpty()) {
-			whereCond.add("telephone = ?");
+
+		hasTelephone = (cond.getTelephone() != null && !cond.getTelephone().isEmpty());
+		if (hasTelephone) {
+			whereCond.add("telephone = :telephone");
 			param.add(cond.getTelephone());
 		}
 
@@ -95,39 +90,36 @@ public class PgUserInfoDao implements UserInfoDao {
 		}
 
 		String whereString = String.join(" AND ", whereCond.toArray(new String[]{}));
-		ArrayList<UserInfo> list = new ArrayList<>();
 
 		// SQL文記載
 		SQLComm += whereString;
 		SQLComm += " ORDER BY"
 				+  " user_id";
 
-		try (Connection con = DbUtil.getConnection();
-				PreparedStatement stmt = con.prepareStatement(SQLComm)) {
-			for (int i = 0; i < param.size(); i++) {
-				// ? は 1 origin
-				stmt.setObject(i + 1, param.get(i));
-			}
+		refAry = 0;
 
-			ResultSet rs = stmt.executeQuery();
-
-			while (rs.next()) {
-				UserInfo u = new UserInfo();
-				u.setId(rs.getInt("user_id"));
-				u.setName(rs.getString("user_name"));
-				u.setTelephone(rs.getString("telephone"));
-				u.setPassword(rs.getString("password"));
-				list.add(u);
-			}
-		} catch (SQLException e) {
-			throw new DataAccessException(e);
+		if(hasUserId) {
+			SQLParam.addValue("user_id", param.get(refAry));
+			refAry++;
 		}
 
-		return list;
+		if(hasUserName) {
+			SQLParam.addValue("user_name", param.get(refAry));
+			refAry++;
+		}
+
+		if(hasTelephone) {
+			SQLParam.addValue("telephone", param.get(refAry));
+			refAry++;
+		}
+
+		return jdbcTemp.query(SQLComm, SQLParam, mapper);
 	}
 
 	@Override
 	public UserInfo findById(int id) {
+		// 変数宣言
+		List<UserInfo> list;
 
 		// 初期化
 		SQLComm = "";
@@ -141,30 +133,23 @@ public class PgUserInfoDao implements UserInfoDao {
 				+ " FROM"
 				+ " user_info"
 				+ " WHERE"
-				+ " user_id = ?";
+				+ " user_id = :user_id";
 
-		try (Connection con = DbUtil.getConnection();
-				PreparedStatement stmt = con.prepareStatement(SQLComm)) {
-			stmt.setInt(1, id);
-			ResultSet rs = stmt.executeQuery();
+		SQLParam.addValue("user_id", id);
+		list = jdbcTemp.query(SQLComm, SQLParam, mapper);
 
-			if (rs.next()) {
-				UserInfo u = new UserInfo();
-				u.setId(rs.getInt("user_id"));
-				u.setName(rs.getString("user_name"));
-				u.setTelephone(rs.getString("telephone"));
-				u.setPassword(rs.getString("password"));
-				return u;
-			}
-		} catch (SQLException e) {
-			throw new DataAccessException(e);
+		if(list.isEmpty() || list.size() != 1) {
+			return null;
+		}else {
+			return list.get(0);
 		}
-
-		return null;
 	}
 
 	@Override
 	public int register(UserInfo user) {
+		// 変数宣言
+		int result;
+		List<UserInfo> list;
 
 		// 初期化
 		SQLComm = "";
@@ -177,29 +162,29 @@ public class PgUserInfoDao implements UserInfoDao {
 				+ " telephone,"
 				+ " password)"
 				+ " VALUES"
-				+ " (?, ?, ?)";
+				+ " (:user_name,"
+				+ " :telephone,"
+				+ " :password)";
 
-		try (Connection con = DbUtil.getConnection();
-				PreparedStatement stmt = con.prepareStatement(SQLComm, Statement.RETURN_GENERATED_KEYS)) {
-			stmt.setString(1, user.getName());
-			stmt.setString(2, user.getTelephone());
-			stmt.setString(3, user.getPassword());
+		SQLParam.addValue("user_name", user.getUserName());
+		SQLParam.addValue("telephone", user.getTelephone());
+		SQLParam.addValue("password", user.getPassword());
 
-			int result = stmt.executeUpdate();
+		result = jdbcTemp.update(SQLComm, SQLParam);
 
-			ResultSet gkey = stmt.getGeneratedKeys();
-			gkey.next();
-			user.setId(gkey.getInt(1));
 
+		list = find(user);
+		if(list.isEmpty() || list.size() != 1) {
+			return 0;
+		}else {
+			user.setUserId(list.get(0).getUserId());
 			return result;
-		} catch (SQLException e) {
-			throw new DataAccessException(e);
 		}
 	}
 
 	@Override
 	public int update(UserInfo user) {
-
+		// 変数宣言
 		// 初期化
 		SQLComm = "";
 
@@ -207,28 +192,23 @@ public class PgUserInfoDao implements UserInfoDao {
 		SQLComm += "UPDATE"
 				+ " user_info"
 				+ " SET"
-				+ " user_name = ?,"
-				+ " telephone = ?,"
-				+ " password = ?"
+				+ " user_name = :user_name,"
+				+ " telephone = :telephone,"
+				+ " password = :password"
 				+ " WHERE"
-				+ " user_id = ?";
+				+ " user_id = :user_id";
 
-		try (Connection con = DbUtil.getConnection();
-				PreparedStatement stmt = con.prepareStatement(SQLComm)) {
-			stmt.setString(1, user.getName());
-			stmt.setString(2, user.getTelephone());
-			stmt.setString(3, user.getPassword());
-			stmt.setInt(4, user.getId());
+		SQLParam.addValue("user_id", user.getUserId());
+		SQLParam.addValue("user_name", user.getUserName());
+		SQLParam.addValue("telephone", user.getTelephone());
+		SQLParam.addValue("password", user.getPassword());
 
-			return stmt.executeUpdate();
-		} catch (SQLException e) {
-			throw new DataAccessException(e);
-		}
+		return jdbcTemp.update(SQLComm, SQLParam);
 	}
 
 	@Override
 	public int delete(int id) {
-
+		// 変数宣言
 		// 初期化
 		SQLComm = "";
 
@@ -237,16 +217,11 @@ public class PgUserInfoDao implements UserInfoDao {
 				+ " FROM"
 				+ " user_info"
 				+ " WHERE"
-				+ " user_id = ?";
+				+ " user_id = :user_id";
 
-		try (Connection con = DbUtil.getConnection();
-				PreparedStatement stmt = con.prepareStatement(SQLComm)) {
-			stmt.setInt(1, id);
+		SQLParam.addValue("user_id", id);
 
-			return stmt.executeUpdate();
-		} catch (SQLException e) {
-			throw new DataAccessException(e);
-		}
+		return jdbcTemp.update(SQLComm, SQLParam);
 	}
 
 }

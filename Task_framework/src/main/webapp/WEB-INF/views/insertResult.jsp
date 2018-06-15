@@ -1,7 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
 	pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn"%>
-<%@ taglib uri="http://www.springframework.org/tags/form" prefix="form"%>
 <!DOCTYPE html>
 <html>
 <head>
@@ -10,7 +9,7 @@
 <link href="css/commons.css" rel="stylesheet">
 </head>
 <body>
-	<p>実行者：${fn:escapeXml(user.name)}</p>
+	<p>実行者：${fn:escapeXml(user.adminName)}</p>
 	<p>正常に登録されました</p>
 	<form action="select">
 		<input type="hidden" name="id" value="${fn:escapeXml(registerUserId)}">

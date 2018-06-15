@@ -1,24 +1,31 @@
 package jp.co.axiz.web.dao.impl;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import jp.co.axiz.web.dao.AdminDao;
 import jp.co.axiz.web.entity.Admin;
-import jp.co.axiz.web.exception.DataAccessException;
-import jp.co.axiz.web.util.DbUtil;
 
 @Repository
 public class PgAdminDao implements AdminDao {
 
+	@Autowired
+	NamedParameterJdbcTemplate jdbcTemp;
+
 	private String SQLComm;
+	private RowMapper<Admin> mapper = new BeanPropertyRowMapper<Admin>(Admin.class);
+	private MapSqlParameterSource SQLParam = new MapSqlParameterSource();
 
 	@Override
 	public Admin findByIdAndPassword(String id, String password) {
+		// 変数宣言
+		List<Admin> list;
 
 		// 初期化
 		SQLComm = "";
@@ -31,28 +38,19 @@ public class PgAdminDao implements AdminDao {
 				+ " FROM"
 				+ " admin"
 				+ " WHERE"
-				+ " admin_id = ?"
+				+ " admin_id = :admin_id"
 				+ " AND"
-				+ " password = ?";
+				+ " password = :password";
 
-		try (Connection con = DbUtil.getConnection();
-				PreparedStatement stmt = con.prepareStatement(SQLComm)) {
-			stmt.setString(1, id);
-			stmt.setString(2, password);
-			ResultSet rs = stmt.executeQuery();
+		SQLParam.addValue("admin_id", id);
+		SQLParam.addValue("password", password);
+		list = jdbcTemp.query(SQLComm, SQLParam, mapper);
 
-			if (rs.next()) {
-				Admin a = new Admin();
-				a.setId(rs.getString("admin_id"));
-				a.setName(rs.getString("admin_name"));
-				a.setPassword(rs.getString("password"));
-				return a;
-			}
-		} catch (SQLException e) {
-			throw new DataAccessException(e);
+		if(list.isEmpty() || list.size() != 1) {
+			return null;
+		}else {
+			return list.get(0);
 		}
-
-		return null;
 	}
 
 }

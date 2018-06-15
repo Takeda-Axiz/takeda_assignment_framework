@@ -24,7 +24,7 @@
 			<div>
 				<label class="required">名前</label>
 				<form:input path="nameVal"
-					value="${fn:escapeXml(registerUser.name)}" />
+					value="${fn:escapeXml(registerUser.userName)}" />
 			</div>
 			<div>
 				<label class="required">TEL</label>

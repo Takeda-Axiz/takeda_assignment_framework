@@ -22,7 +22,7 @@
 			<div>
 				<label>名前</label>
 				<form:input path="nameVal"
-					value="${fn:escapeXml(registerUser.name)}" readonly="true" />
+					value="${fn:escapeXml(registerUser.userName)}" readonly="true" />
 			</div>
 			<div>
 				<label>TEL</label>

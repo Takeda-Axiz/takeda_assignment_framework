@@ -29,7 +29,7 @@ public class InsertServiceImpl implements InsertService {
 		inputTel = form.getTelVal();
 		inputPass = form.getPassVal();
 
-		ui.setName(inputName);
+		ui.setUserName(inputName);
 		ui.setTelephone(inputTel);
 		ui.setPassword(inputPass);
 

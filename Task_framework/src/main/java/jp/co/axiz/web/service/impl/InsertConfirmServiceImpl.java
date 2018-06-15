@@ -39,7 +39,7 @@ public class InsertConfirmServiceImpl implements InsertConfirmService {
 			// 一致している場合
 			uidao.register(ui);
 
-			session.setAttribute("registerUserId", ui.getId());
+			session.setAttribute("registerUserId", ui.getUserId());
 			session.removeAttribute("registerUser");
 			// insertResult.jspに遷移
 			retStr = "insertResult";

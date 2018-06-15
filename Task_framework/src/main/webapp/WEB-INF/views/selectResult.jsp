@@ -22,8 +22,8 @@
 		<tbody>
 			<c:forEach items="${userlist}" var="user">
 				<tr>
-					<td>${fn:escapeXml(user.id)}</td>
-					<td>${fn:escapeXml(user.name)}</td>
+					<td>${fn:escapeXml(user.userId)}</td>
+					<td>${fn:escapeXml(user.userName)}</td>
 					<td>${fn:escapeXml(user.telephone)}</td>
 				</tr>
 			</c:forEach>

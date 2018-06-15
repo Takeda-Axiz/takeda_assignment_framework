@@ -14,7 +14,7 @@
 <link href="css/commons.css" rel="stylesheet">
 </head>
 <body>
-<p>${fn:escapeXml(user.name)}さん、こんにちは</p>
+<p>${fn:escapeXml(user.adminName)}さん、こんにちは</p>
 
 <p><a href="select">検索</a></p>
 <p><a href="insert">登録</a></p>

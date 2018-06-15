@@ -4,8 +4,8 @@ import java.io.Serializable;
 
 public class Admin implements Serializable {
 	/*---  Field  ---*/
-	private String id;
-	private String name;
+	private String adminId;
+	private String adminName;
 	private String password;	//変数名概要
 
 	/*---  Field End  ---*/
@@ -15,20 +15,20 @@ public class Admin implements Serializable {
 
 	/*---  Method  ---*/
 	//  処理概要
-	public String getId() {
-		return id;
+	public String getAdminId() {
+		return adminId;
 	}
 
-	public void setId(String id) {
-		this.id = id;
+	public void setAdminId(String id) {
+		this.adminId = id;
 	}
 
-	public String getName() {
-		return name;
+	public String getAdminName() {
+		return adminName;
 	}
 
-	public void setName(String name) {
-		this.name = name;
+	public void setAdminName(String name) {
+		this.adminName = name;
 	}
 
 	public String getPassword() {

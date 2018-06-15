@@ -31,12 +31,12 @@ public class SelectServiceImpl implements SelectService {
 		inputTel = form.getTelVal();
 
 		try {
-			cond.setId(Integer.parseInt(inputId));
+			cond.setUserId(Integer.parseInt(inputId));
 		} catch (NumberFormatException e) {
 			// do nothing
 		}
 
-		cond.setName(inputName);
+		cond.setUserName(inputName);
 		cond.setTelephone(inputTel);
 
 		List<UserInfo> list = uidao.find(cond);
